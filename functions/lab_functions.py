@@ -43,7 +43,7 @@ def plot_spec(*args, title='', dB=False, func='plot'):
     
     fig, axs = plt.subplots(2, 1)
     
-    mag_ylabel = 'Magnitude [dB]'
+    mag_ylabel = 'Magnitude'
     xlabel='Frequency [Hz]'
     
     if dB is True:
@@ -66,16 +66,62 @@ def plot_spec(*args, title='', dB=False, func='plot'):
     
     return plt
 
-
-def plot_spec_peaks(*args, **kwargs):
-
+def plot_spec_filter(*args, title='', dB=False, func='plot'):
+    min = 0
     if len(args)==1:
         x=args[0]
+    elif len(args) == 2:
+        f_step=args[0]
+        x=args[1]
     else:
         f_step=args[0]
         x=args[1]
+        min = args[2]
+    
+    mag = np.real(np.sqrt(x * np.conj(x)))
+    mag = np.array(list(map(lambda x: x if x > min else 0, mag)))
+    phase = np.arctan2(np.imag(x), np.real(x))
+    phase = np.unwrap(phase)
+    
+    fig, axs = plt.subplots(2, 1)
+    
+    mag_ylabel = 'Magnitude'
+    xlabel='Frequency [Hz]'
+    
+    if dB is True:
+        mag = 20*np.log10(mag)
+        mag_ylabel = 'Magnitude [dB]'
+    
+    if len(args)==1:
+        xlabel='Frequency [k]'
+        eval('axs[0].'+func+'(mag)')
+        axs[1].plot(phase)
+    else:
+        eval('axs[0].'+func+'(f_step, mag)')
+        axs[1].plot(f_step, phase)
+        
+    axs[0].set(xlabel=xlabel, ylabel=mag_ylabel, title=title)
+    axs[1].set(xlabel=xlabel, ylabel='Phase [radians] ')
+    axs[0].grid()
+    axs[1].grid()
+    fig.tight_layout()
+    
+    return plt
+
+def plot_spec_peaks(*args, **kwargs):
+    min = 0
+    if len(args)==1:
+        x=args[0]
+    elif len(args) == 2:
+        f_step=args[0]
+        x=args[1]
+    else:
+        f_step=args[0]
+        x=args[1]
+        min = args[2]
 
     mag = np.real(np.sqrt(x * np.conj(x)))
+    mag = np.array(list(map(lambda x: x if x > min else 0, mag)))
         
     plt = plot_spec(*args, **kwargs)
         
